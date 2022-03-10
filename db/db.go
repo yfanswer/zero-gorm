@@ -42,45 +42,45 @@ type (
 	// RawsFn defines the raw method.
 	RawsFn func(*sql.Rows) error
 	// TXFn defines the transaction method.
-	TXFn func(conn dbConn) error
+	TXFn func(conn DBConn) error
 
-	dbConn struct {
+	DBConn struct {
 		db    *gorm.DB
 		cache cache.Cache
 	}
 )
 
-func NewDBConn(db *gorm.DB, c cache.CacheConf, opts ...cache.Option) dbConn {
+func NewDBConn(db *gorm.DB, c cache.CacheConf, opts ...cache.Option) DBConn {
 	if len(c) == 0 || cache.TotalWeights(c) <= 0 {
-		return dbConn{
+		return DBConn{
 			db: db,
 		}
 	}
-	return dbConn{
+	return DBConn{
 		db:    db,
 		cache: cache.New(c, exclusiveCalls, stats, sql.ErrNoRows, opts...),
 	}
 }
 
 // DB *gorm.DB
-func (cc dbConn) DB() *gorm.DB {
+func (cc DBConn) DB() *gorm.DB {
 	return cc.db
 }
 
 // Cache entity
-func (cc dbConn) Cache() cache.Cache {
+func (cc DBConn) Cache() cache.Cache {
 	return cc.cache
 }
 
 // DelCache deletes cache with keys.
-func (cc dbConn) DelCache(keys ...string) error {
+func (cc DBConn) DelCache(keys ...string) error {
 	if cc.cache != nil {
 		return cc.cache.Del(keys...)
 	}
 	return nil
 }
 
-func (cc dbConn) SetCache(key string, v interface{}) error {
+func (cc DBConn) SetCache(key string, v interface{}) error {
 	if cc.cache != nil {
 		return cc.cache.Set(key, v)
 	}
@@ -88,7 +88,7 @@ func (cc dbConn) SetCache(key string, v interface{}) error {
 }
 
 // GetCache unmarshal cache with given key into v.
-func (cc dbConn) GetCache(key string, v interface{}) error {
+func (cc DBConn) GetCache(key string, v interface{}) error {
 	if cc.cache != nil {
 		return cc.cache.Get(key, v)
 	}
@@ -96,17 +96,17 @@ func (cc dbConn) GetCache(key string, v interface{}) error {
 }
 
 // ExecFn Exec runs given exec on given keys, and returns execution result.
-func (cc dbConn) ExecFn(exec ExecFn) (interface{}, error) {
+func (cc DBConn) ExecFn(exec ExecFn) (interface{}, error) {
 	return exec(cc.db)
 }
 
 // ExecNoCache runs exec with given sql statement, without affecting cache.
-func (cc dbConn) ExecNoCache(q string, args ...interface{}) error {
+func (cc DBConn) ExecNoCache(q string, args ...interface{}) error {
 	return cc.db.Exec(q, args...).Error
 }
 
 // QueryRow unmarshals into v with given key and query func.
-func (cc dbConn) QueryRow(v interface{}, key string, query QueryFn) error {
+func (cc DBConn) QueryRow(v interface{}, key string, query QueryFn) error {
 	if cc.cache == nil {
 		return query(cc.db, v)
 	}
@@ -116,7 +116,7 @@ func (cc dbConn) QueryRow(v interface{}, key string, query QueryFn) error {
 }
 
 //// QueryRowIndex unmarshals into v with given key.
-//func (cc dbConn) QueryRowIndex(v interface{}, key string, keyer func(primary interface{}) string,
+//func (cc DBConn) QueryRowIndex(v interface{}, key string, keyer func(primary interface{}) string,
 //	indexQuery IndexQueryFn, primaryQuery PrimaryQueryFn) error {
 //	var primaryKey interface{}
 //	var found bool
@@ -143,14 +143,14 @@ func (cc dbConn) QueryRow(v interface{}, key string, query QueryFn) error {
 //}
 
 // // QueryRowNoCache unmarshals into v with given statement.
-// func (cc dbConn) QueryRowNoCache(v interface{}, q string, args ...interface{}) error {
+// func (cc DBConn) QueryRowNoCache(v interface{}, q string, args ...interface{}) error {
 // 	cc.db.Raw(q, args...).Scan(&v).ro
 // 	cc.db.
 // 	cc.db.Exec(q, args...).Scan()
 // 	return cc.db.QueryRow(v, q, args...)
 // }
 
-func (cc dbConn) QueryRowsNoCache(rawsFunc RawsFn, q string, values ...interface{}) error {
+func (cc DBConn) QueryRowsNoCache(rawsFunc RawsFn, q string, values ...interface{}) error {
 	rows, err := cc.db.Raw(q, values...).Rows()
 	if err != nil {
 		return err
@@ -167,7 +167,7 @@ func (cc dbConn) QueryRowsNoCache(rawsFunc RawsFn, q string, values ...interface
 // SetCache sets v into cache with given key.
 
 // Transaction runs given fn in transaction mode.
-func (cc dbConn) Transaction(fn TXFn) error {
+func (cc DBConn) Transaction(fn TXFn) error {
 	tx := cc.db.Begin()
 	if err := fn(cc); err != nil {
 		tx.Rollback()
@@ -178,7 +178,7 @@ func (cc dbConn) Transaction(fn TXFn) error {
 	return nil
 }
 
-func (cc dbConn) InsertIndex(insert InsertFn, keys ...string) error {
+func (cc DBConn) InsertIndex(insert InsertFn, keys ...string) error {
 	if err := insert(cc.db); err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func (cc dbConn) InsertIndex(insert InsertFn, keys ...string) error {
 	return nil
 }
 
-func (cc dbConn) DelIndex(del DeleteFn, keys ...string) error {
+func (cc DBConn) DelIndex(del DeleteFn, keys ...string) error {
 	if err := del(cc.db); err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (cc dbConn) DelIndex(del DeleteFn, keys ...string) error {
 	return nil
 }
 
-func (cc dbConn) UpdateIndex(update UpdateFn, keys ...string) error {
+func (cc DBConn) UpdateIndex(update UpdateFn, keys ...string) error {
 	if err := update(cc.db); err != nil {
 		return err
 	}
@@ -214,7 +214,7 @@ func (cc dbConn) UpdateIndex(update UpdateFn, keys ...string) error {
 	return nil
 }
 
-func (cc dbConn) FindIndex(v interface{}, key string, find FindFn) error {
+func (cc DBConn) FindIndex(v interface{}, key string, find FindFn) error {
 	if cc.cache == nil {
 		return find(cc.db, v)
 	}
@@ -223,6 +223,6 @@ func (cc dbConn) FindIndex(v interface{}, key string, find FindFn) error {
 	})
 }
 
-func (cc dbConn) FindNoCache(v interface{}, find FindFn) error {
+func (cc DBConn) FindNoCache(v interface{}, find FindFn) error {
 	return find(cc.db, v)
 }

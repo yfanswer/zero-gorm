@@ -1,5 +1,6 @@
 
 import (
+    "fmt"
     "database/sql"
 	"github.com/yfanswer/zero-gorm/db"
 	{{if .time}}"time"{{end}}
