@@ -1,0 +1,9 @@
+*.md linguist-language=GoLang 
+*.yml linguist-language=GoLang 
+*.html linguist-language=GoLang 
+*.js linguist-language=GoLang 
+*.xml linguist-language=GoLang
+*.css linguist-language=GoLang 
+*.sql linguist-language=GoLang
+*.uml linguist-language=GoLang 
+*.cmd linguist-language=GoLang 
