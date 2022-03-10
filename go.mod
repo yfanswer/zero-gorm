@@ -1,4 +1,4 @@
-module zero-gorm
+module github.com/yfanswer/zero-gorm
 
 go 1.17
 
