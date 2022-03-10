@@ -4,7 +4,9 @@ func (m *default{{.upperStartCamelObject}}Model) Delete({{.lowerStartCamelPrimar
     if err!=nil{
         return err
     }{{end}}
-	{{.keys}}{{end}}err = m.dbConn.DelIndex(func(conn *gorm.DB) error {
+    
+	{{.keys}}{{end}}
+	err = m.dbConn.DelIndex(func(conn *gorm.DB) error {
 		return conn.Delete(&{{.upperStartCamelObject}}{},{{.lowerStartCamelPrimaryKey}}).Error
 	}{{if .withCache}},{{.keyValues}}{{end}})
 	if err != nil {
