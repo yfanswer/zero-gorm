@@ -5,7 +5,7 @@ type (
 	}
 
 	default{{.upperStartCamelObject}}Model struct {
-        dbConn db.DBConn
+        dbConn *db.DBConn
         table string
     }
 
