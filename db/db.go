@@ -146,6 +146,11 @@ func (cc *DBConn) QueryRow(v interface{}, key string, query QueryFn) error {
 
 // QueryRowCtx unmarshals into v with given key and query func.
 func (cc *DBConn) QueryRowCtx(ctx context.Context, v interface{}, key string, query QueryCtxFn) error {
+	if cc.cache == nil {
+		if err := cc.QueryRowNoCacheCtx(ctx, v, query); err != nil {
+			return err
+		}
+	}
 	err := cc.cache.TakeCtx(ctx, v, key, func(v interface{}) error {
 		return query(ctx, cc.db, v)
 	})
@@ -172,6 +177,15 @@ func (cc *DBConn) QueryRowIndexCtx(ctx context.Context, v interface{}, key strin
 	keyer func(primary interface{}) string, indexQuery IndexQueryCtxFn, primaryQuery PrimaryQueryCtxFn) error {
 	var primaryKey interface{}
 	var found bool
+
+	if cc.cache == nil {
+		return cc.QueryRowNoCacheCtx(ctx, v, func(ctx context.Context, conn *gorm.DB, v interface{}) error {
+			if _, err := indexQuery(ctx, conn, v); err != nil {
+				return err
+			}
+			return nil
+		})
+	}
 
 	if err := cc.cache.TakeWithExpireCtx(ctx, &primaryKey, key,
 		func(val interface{}, expire time.Duration) (err error) {
