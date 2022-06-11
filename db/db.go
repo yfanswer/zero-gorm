@@ -67,8 +67,9 @@ func (cc *DBConn) DB() *gorm.DB {
 }
 
 // WithContext with context
-func (cc *DBConn) WithContext(ctx context.Context) {
-	cc.db.WithContext(ctx)
+func (cc *DBConn) WithContext(ctx context.Context) *DBConn {
+	cc.db = cc.db.WithContext(ctx)
+	return cc
 }
 
 // Cache entity
