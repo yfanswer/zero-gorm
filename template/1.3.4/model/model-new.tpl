@@ -1,7 +1,7 @@
 
-func new{{.upperStartCamelObject}}Model(gdb *gorm.DB, c cache.CacheConf) *default{{.upperStartCamelObject}}Model {
+func new{{.upperStartCamelObject}}Model(conn *db.DBConn) *default{{.upperStartCamelObject}}Model {
 	return &default{{.upperStartCamelObject}}Model{
-		dbConn: db.NewDBConn(gdb, c),
+		dbConn: conn,
 		table:{{.table}},
 	}
 }

@@ -1,8 +1,7 @@
 package {{.pkg}}
 {{if .withCache}}
 import (
-	"github.com/zeromicro/go-zero/core/stores/cache"
-	"gorm.io/gorm"
+	"github.com/yfanswer/zero-gorm/db"
 )
 {{else}}
 import "gorm.io/gorm"
@@ -22,9 +21,9 @@ type (
 )
 
 // New{{.upperStartCamelObject}}Model returns a model for the database table.
-func New{{.upperStartCamelObject}}Model(gdb *gorm.DB{{if .withCache}}, c cache.CacheConf{{end}}) {{.upperStartCamelObject}}Model {
+func New{{.upperStartCamelObject}}Model(conn *db.DBConn) {{.upperStartCamelObject}}Model {
 	return &custom{{.upperStartCamelObject}}Model{
-		default{{.upperStartCamelObject}}Model: new{{.upperStartCamelObject}}Model(gdb{{if .withCache}}, c{{end}}),
+		default{{.upperStartCamelObject}}Model: new{{.upperStartCamelObject}}Model(conn),
 	}
 }
 

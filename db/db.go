@@ -66,6 +66,11 @@ func (cc *DBConn) DB() *gorm.DB {
 	return cc.db
 }
 
+// WithContext with context
+func (cc *DBConn) WithContext(ctx context.Context) {
+	cc.db.WithContext(ctx)
+}
+
 // Cache entity
 func (cc *DBConn) Cache() cache.Cache {
 	return cc.cache
