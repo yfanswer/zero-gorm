@@ -153,9 +153,7 @@ func (cc *DBConn) QueryRow(v interface{}, key string, query QueryFn) error {
 // QueryRowCtx unmarshals into v with given key and query func.
 func (cc *DBConn) QueryRowCtx(ctx context.Context, v interface{}, key string, query QueryCtxFn) error {
 	if cc.cache == nil {
-		if err := cc.QueryRowNoCacheCtx(ctx, v, query); err != nil {
-			return err
-		}
+		return cc.QueryRowNoCacheCtx(ctx, v, query)
 	}
 	err := cc.cache.TakeCtx(ctx, v, key, func(v interface{}) error {
 		return query(ctx, cc.db, v)
