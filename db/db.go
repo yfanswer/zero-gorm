@@ -61,6 +61,13 @@ func NewDBConn(db *gorm.DB, c cache.CacheConf, opts ...cache.Option) *DBConn {
 	}
 }
 
+func newDBConnWithCache(db *gorm.DB, cache cache.Cache) *DBConn {
+	return &DBConn{
+		db:    db,
+		cache: cache,
+	}
+}
+
 // DB *gorm.DB
 func (cc *DBConn) DB() *gorm.DB {
 	return cc.db
@@ -245,7 +252,8 @@ func (cc *DBConn) SetCacheCtx(ctx context.Context, key string, v interface{}) er
 // Transact runs given fn in transaction mode.
 func (cc *DBConn) Transact(fn TXFn) error {
 	tx := cc.db.Begin()
-	if err := fn(cc); err != nil {
+	txDBConn := newDBConnWithCache(tx, cc.cache)
+	if err := fn(txDBConn); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -258,7 +266,8 @@ func (cc *DBConn) Transact(fn TXFn) error {
 // TransactCtx runs given fn in transaction mode.
 func (cc *DBConn) TransactCtx(ctx context.Context, fn TXCtxFn) error {
 	tx := cc.db.Begin()
-	if err := fn(ctx, cc); err != nil {
+	txDBConn := newDBConnWithCache(tx, cc.cache)
+	if err := fn(ctx, txDBConn); err != nil {
 		tx.Rollback()
 		return err
 	}
